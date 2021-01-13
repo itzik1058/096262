@@ -11,6 +11,7 @@ trec_eval_dir = Path('../trec_eval_9.0')
 
 run_query_bin = indri_install_dir / 'bin/IndriRunQuery'
 trec_eval_bin = trec_eval_dir / 'trec_eval'
+stopwords_file = Path('stopwords.txt')
 
 qrels_file = sys.argv[1]  # Path to qrels
 query_file = sys.argv[2]  # Path to queries
@@ -59,12 +60,15 @@ def write_results(path, results, run_tag='indri'):
 
 def make_parameters(method):
     stopwords = ''
-    with Path('stopwords.txt').open('r') as f:
-        for word in f.read().splitlines():
-            stopwords += f'<word>{word}</word>\n'
+    if stopwords_file.is_file():
+        stopwords += '<stopper>\n'
+        with stopwords_file.open('r') as f:
+            for word in f.read().splitlines():
+                stopwords += f'<word>{word}</word>\n'
+        stopwords += '</stopper>\n'
     parameters = f'<parameters>\n<memory>1G</memory>\n<index>/data/IRCompetition/ROBUSTindex</index>\n' \
                  f'<count>1000</count>\n<trecFormat>true</trecFormat>\n{method}\n' \
-                 f'<stopper>\n{stopwords}</stopper>\n</parameters>'
+                 f'{stopwords}</parameters>'
     return parameters
 
 
@@ -537,4 +541,4 @@ def main(evaluate=False):
 
 
 if __name__ == '__main__':
-    main(evaluate=True)
+    main()
